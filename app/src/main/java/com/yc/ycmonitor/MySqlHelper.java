@@ -16,8 +16,8 @@ public class MySqlHelper extends SQLiteOpenHelper{
 
     public void onCreate(SQLiteDatabase db){ //创建表
         //创建表people_info的sql语句
-        String sql_info = "create table people_info(name verchar(20),ID int,identity char(20),professional verchar(20))";
-        String sql_time = "create table people_time(ID int,time datetime)";
+        String sql_info = "create table people_info(name varchar(20),ID int primary key,identity char(20),professional varchar(20))";
+        String sql_time = "create table people_time(ID int,time datetime,primary key(ID,time))";
         db.execSQL(sql_info); //执行sql语句
         db.execSQL(sql_time);
     }

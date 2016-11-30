@@ -29,7 +29,7 @@ import java.util.ArrayList;
  * 3.怎么获取XML文件里的数组数据
  * 4.还有identity、professional和imageData数据没有写入数据库中（未修改数据库）
  */
-public class MainActivity extends Activity implements OnGestureListener { //打开软件的页面
+public class MainActivity extends Activity implements OnGestureListener{ //打开软件的页面
 
     private static final String TAG = "MainActivity";
 
@@ -45,15 +45,11 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
     private Button update; //更新按钮
     private TextView time; //出现的时间
     private TextView name; //出现人物的姓名
-    private Intent secondIntent; //大视图切换成列表视图
-    private Intent thirdIntent; //点击之后进入个人详细列表
 
     private ArrayList<Integer> imageList; //人物图片集合
     private ArrayList<String> timeList; //人物出现时间集合
     private ArrayList<String> nameList; //人物姓名集合
     private ArrayList<Integer> IDList; //人物的ID，即每个人的标识
-    private ArrayList<String> professionalList; //人物的职业
-    private ArrayList<String> identityList; //人物的身份证号
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,30 +60,22 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         nameList = new ArrayList<String>();
         timeList = new ArrayList<String>();
         IDList = new ArrayList<Integer>();
-        professionalList = new ArrayList<String>();
-        identityList = new ArrayList<String>();
 
         initViewFlipper(); //初始化图片移动效果
-        addPeopleImage(); //往viewFlipper添加View
-        addNameText(); //添加姓名name
-        addTimeText(); //添加时间text
         initTitleButton(); //初始化退出和切换视图按钮
+
+        init();
 
     }
 
     private void initTitleButton() { //初始化按钮
         change = (Button)findViewById(R.id.button_change);
         update = (Button)findViewById(R.id.button_update);
-        secondIntent = new Intent(MainActivity.this, SecondActivity.class);
-        secondIntent.putStringArrayListExtra("name", nameList);
-        secondIntent.putStringArrayListExtra("time", timeList);
-        secondIntent.putIntegerArrayListExtra("image", imageList);
-        secondIntent.putIntegerArrayListExtra("ID", IDList);
-        secondIntent.putStringArrayListExtra("identity", identityList);
-        secondIntent.putStringArrayListExtra("professional", professionalList);
         change.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Intent secondIntent; //大视图切换成列表视图
+                secondIntent = new Intent(MainActivity.this, SecondActivity.class);
                 startActivity(secondIntent);
             }
         });
@@ -96,12 +84,18 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
             public void onClick(View v) {
                 //getInfo();调用后台getInfo方法,该方法返回一个集合（或者数组），里面装有相关信息
                 //将获取到的记录的图片添加进ViewFlipper，时间则添加到TimeText
+                ArrayList<Integer> imageList = new ArrayList<Integer>();
+                ArrayList<String> timeList = new ArrayList<String>();
+                ArrayList<String> nameList = new ArrayList<String>();
+                ArrayList<Integer> IDList = new ArrayList<Integer>();
+                ArrayList<String> professionalList = new ArrayList<String>();
+                ArrayList<String> identityList = new ArrayList<String>();
+
                 imageList.add(R.drawable.new_feature_1);
                 imageList.add(R.drawable.new_feature_10);
                 imageList.add(R.drawable.new_feature_4);
                 imageList.add(R.drawable.new_feature_11);
-                addPeopleImage();
-                viewFlipper.refreshDrawableState();
+                addPeopleImage(imageList);
 
                 nameList.add("Mike");
                 nameList.add("Tony");
@@ -116,7 +110,7 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
                 IDList.add(1);
                 IDList.add(2);
                 IDList.add(3);
-                IDList.add(4);
+                IDList.add(2);
 
                 identityList.add("110102197501101519");
                 identityList.add("44010219750110151X");
@@ -129,14 +123,9 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
                 professionalList.add("健身教练");
 
                 insertDB(timeList, nameList, IDList, identityList, professionalList); //插入数据项
-                nameList.clear();
-                timeList.clear();
-                IDList.clear();
-                identityList.clear();
-                professionalList.clear();
-                imageList.clear();
 
                 searchDB(); //遍历数据库
+                searchTable();
             }
         });
     }
@@ -148,28 +137,13 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         View.OnClickListener listener = new View.OnClickListener() { //点击事件
             @Override
             public void onClick(View v) { //在点击之后检索出所有该人物信息，组织好后放到Intent中传过去
-                ArrayList<Integer> newIDList = new ArrayList<Integer>();
-                ArrayList<Integer> newImageList = new ArrayList<Integer>();
-                ArrayList<String> newTimeList = new ArrayList<String>();
-                ArrayList<String> newNameList = new ArrayList<String>();
-                if(IDList.size() > 0){
-                    int position = viewFlipper.getDisplayedChild(); //找到点击的图片的相关信息的位置
-                    int id = IDList.get(position);
-                    for(int i = 0, size = IDList.size(); i < size; i++){ //把检索出来的数据放到新的集合中
-                        if(IDList.get(i) == id){
-                            newNameList.add(nameList.get(i));
-                            newTimeList.add(timeList.get(i));
-                            newIDList.add(IDList.get(i));
-                        }
-                    }
+                int position = viewFlipper.getDisplayedChild(); //找到点击的图片的相关信息的位置
+                int id = IDList.get(position);
 
-                    thirdIntent = new Intent(MainActivity.this, ThirdActivity.class);
-                    thirdIntent.putStringArrayListExtra("name", newNameList); //将新的集合传入Intent
-                    thirdIntent.putStringArrayListExtra("time", newTimeList);
-                    thirdIntent.putIntegerArrayListExtra("image", newImageList);
-                    thirdIntent.putIntegerArrayListExtra("ID", newIDList);
-                    startActivity(thirdIntent);
-                }
+                Intent thirdIntent; //点击之后进入个人详细列表
+                thirdIntent = new Intent(MainActivity.this, ThirdActivity.class);
+                thirdIntent.putExtra("ID", id);
+                startActivity(thirdIntent);
             }
         };
 
@@ -181,17 +155,29 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         viewFlipper.setOnClickListener(listener);
     }
 
-    private void addPeopleImage() { //往viewFlipper添加View
+    private void init(){
+        initNameText(); //添加姓名name
+        initTimeText(); //添加时间text
+        searchDB();
+        imageList.add(R.drawable.new_feature_1);
+        imageList.add(R.drawable.new_feature_10);
+        imageList.add(R.drawable.new_feature_4);
+        imageList.add(R.drawable.new_feature_11);
+        addPeopleImage(imageList);
+
+    }
+
+    private void addPeopleImage(ArrayList<Integer> imageList) { //往viewFlipper添加View
         for(int i = 0; i < imageList.size(); i++) { //将集合里的数据放到viewFlipper里
             viewFlipper.addView(getImageView(imageList.get(i)));
         }
     }
 
-    private void addTimeText() {
+    private void initTimeText() {
         time = (TextView) findViewById(R.id.time_main_activity);
     }
 
-    private void addNameText() {
+    private void initNameText() {
         name = (TextView)findViewById(R.id.name);
     }
 
@@ -210,10 +196,10 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         ArrayList<Integer> IDList = ID; //用来插入people_time表
 
         //判断数据库中是否已经存在了这些数据
-        Cursor cursor = db.rawQuery("select ID from people_info", null);
+        /*Cursor cursor = db.rawQuery("select ID from people_info", null);
         while(cursor.moveToNext()){
             int IDData = cursor.getInt(cursor.getColumnIndex("ID"));
-            for(int size = ID.size(), i = size-1; i > 0; i--){
+            for(int size = ID.size(), i = size-1; i >= 0; i--){
                 if(ID.get(i) == IDData){ //数据库中已经有了这些数据
                     ID.remove(i);
                     name.remove(i);
@@ -221,12 +207,12 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
                     professional.remove(i);
                 }
             }
-        }
+        }*/
 
         //生成ContentValues对象
         ContentValues cv1 = new ContentValues();
         //往ContentValues对象存放数据，键-值对模式，插入到表people_info当中
-        for(int i = 0, size = ID.size(); i < size; i++){
+        for(int size = ID.size(), i = size-1; i >= 0; i--){
             //将传来的数据插入到表中
             cv1.put("name", name.get(i));
             cv1.put("ID", ID.get(i));
@@ -238,7 +224,7 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
 
         //插入到表people_time当中
         ContentValues cv2 = new ContentValues();
-        for(int i = 0, size = ID.size(); i < size; i++){
+        for(int size = IDList.size(), i = size-1; i >= 0; i--){
             //将传来的数据插入到表中
             cv2.put("time", time.get(i));
             cv2.put("ID", IDList.get(i));
@@ -255,7 +241,11 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         //得到一个可写的数据库
         SQLiteDatabase db =dbHelper.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery("select name,people_info.ID,time from people_info,people_time where people_info.ID=people_time.ID", null);
+        IDList.clear();
+        nameList.clear();
+        timeList.clear();
+        Cursor cursor = db.rawQuery("select name,people_info.ID,time from people_info,people_time " +
+                "where people_info.ID=people_time.ID order by time DESC", null);
         while(cursor.moveToNext()){
             int ID = cursor.getInt(cursor.getColumnIndex("ID"));
             String name = cursor.getString(cursor.getColumnIndex("name"));
@@ -263,7 +253,7 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
             IDList.add(ID);
             nameList.add(name);
             timeList.add(time);
-            //System.out.println("query------->" + "姓名："+name+" "+"时间："+time+" "+"号码："+ID);
+            System.out.println("query------->" + "姓名："+name+" "+"时间："+time+" "+"号码："+ID);
         }
         //关闭数据库
         db.close();
@@ -349,6 +339,42 @@ public class MainActivity extends Activity implements OnGestureListener { //打�
         return false;
     }
 
+    private void dropTable(){
+        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
+        //得到一个可写的数据库
+        SQLiteDatabase db =dbHelper.getReadableDatabase();
+
+        String sql = "drop table people_info";
+        db.execSQL(sql);
+        db.close();
+    }
+
+    //删除数据库
+    private void dropDB(){
+        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
+        //得到一个可写的数据库
+        SQLiteDatabase db =dbHelper.getReadableDatabase();
+        this.deleteDatabase("people_db");
+        db.close();
+    }
+
+    private void searchTable(){
+
+        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
+        //得到一个可写的数据库
+        SQLiteDatabase db =dbHelper.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("select * from people_info", null);
+        while(cursor.moveToNext()){
+            int ID = cursor.getInt(cursor.getColumnIndex("ID"));
+            String name = cursor.getString(cursor.getColumnIndex("name"));
+            String identity = cursor.getString(cursor.getColumnIndex("identity"));
+            String professional = cursor.getString(cursor.getColumnIndex("professional"));
+            System.out.println("query------->" + "姓名："+name+" "+"身份证号："+identity+" "+"号码："+ID+"职业: "+professional);
+        }
+        //关闭数据库
+        db.close();
+    }
 }
 
 
