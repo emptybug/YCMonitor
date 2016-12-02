@@ -1,7 +1,6 @@
 package com.yc.ycmonitor;
 
 import android.app.Activity;
-import android.app.Service;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
@@ -37,7 +36,7 @@ public class SecondActivity extends Activity { //ListView的页面
     private ArrayList<String> timeList; //人物出现时间的集合
     private ArrayList<String> nameList; //人物姓名
 
-    /*private class GetDataTask extends AsyncTask<String, Void, String[]>{
+    private class GetDataTask extends AsyncTask<String, Void, String> {
 
         @Override
         //doInBackground方法内部执行后台任务,不可在此方法内修改UI
@@ -47,17 +46,13 @@ public class SecondActivity extends Activity { //ListView的页面
 
 
         @Override
-        protected void onPostExecute(String[] result) {
+        protected void onPostExecute(String result) {
             // Call onRefreshComplete when the list has been refreshed.
             listView.onRefreshComplete();
             super.onPostExecute(result);
         }
 
-        @Override
-        protected void onProgressUpdate(Integer... values){
-
-        }
-    }*/
+    }
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -73,7 +68,7 @@ public class SecondActivity extends Activity { //ListView的页面
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent thirdIntent;
-                int ID = IDList.get(position);
+                int ID = IDList.get(position-1);
                 thirdIntent = new Intent(SecondActivity.this, ThirdActivity.class);
                 thirdIntent.putExtra("ID", ID);
                 startActivity(thirdIntent);
@@ -82,7 +77,8 @@ public class SecondActivity extends Activity { //ListView的页面
         });
     }
 
-    private void initTitleButton() { //初始化按钮
+    //初始化按钮
+    private void initTitleButton() {
         change = (Button)findViewById(R.id.button_change);
         change.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,17 +88,19 @@ public class SecondActivity extends Activity { //ListView的页面
         });
     }
 
-    private void initPeople(){ //初始化ListView
+    //初始化人物ID、名称、时间集合
+    private void initPeople(){
         imageList = new ArrayList<>();
         IDList = new ArrayList<>();
         timeList = new ArrayList<>();
         nameList = new ArrayList<>();
         searchDB();
         for(int i = 0, size = IDList.size(); i < size; i++){
-            addListItem(nameList.get(i), R.drawable.new_feature_4, timeList.get(i));
+            addListItem(nameList.get(i), R.drawable.new_feature_3, timeList.get(i));
         }
     }
 
+    //初始化ListView
     private void initListView(){
         adapter = new PeopleAdapter(SecondActivity.this,
                 R.layout.people_item, peopleList);
@@ -118,34 +116,34 @@ public class SecondActivity extends Activity { //ListView的页面
                 ArrayList<String> identityList = new ArrayList<String>();
 
                 imageList.add(R.drawable.new_feature_1);
-                imageList.add(R.drawable.new_feature_10);
+                imageList.add(R.drawable.new_feature_2);
+                imageList.add(R.drawable.new_feature_3);
                 imageList.add(R.drawable.new_feature_4);
-                imageList.add(R.drawable.new_feature_11);
 
-                nameList.add("Mike");
                 nameList.add("Tony");
                 nameList.add("Lisa");
                 nameList.add("Tony");
+                nameList.add("Mike");
 
-                timeList.add("2016-10-1 10:30");
-                timeList.add("2016-10-1 11:30");
-                timeList.add("2016-10-1 12:30");
                 timeList.add("2016-10-1 21:20");
+                timeList.add("2016-10-1 12:30");
+                timeList.add("2016-10-1 11:30");
+                timeList.add("2016-10-1 10:30");
 
-                IDList.add(1);
                 IDList.add(2);
                 IDList.add(3);
                 IDList.add(2);
+                IDList.add(1);
 
-                identityList.add("110102197501101519");
                 identityList.add("44010219750110151X");
                 identityList.add("330102197511193680");
                 identityList.add("44010219750110151X");
+                identityList.add("110102197501101519");
 
-                professionalList.add("教授");
                 professionalList.add("健身教练");
                 professionalList.add("厨师");
                 professionalList.add("健身教练");
+                professionalList.add("教授");
 
                 insertDB(timeList, nameList, IDList, identityList, professionalList); //插入数据项
 
@@ -154,20 +152,19 @@ public class SecondActivity extends Activity { //ListView的页面
                 for(int size = IDList.size(), i = 0; i < size; i++){
                     addListItem(nameList.get(i), R.drawable.new_feature_1, timeList.get(i));
                 }
-                //new GetDataTask().execute();
+                new GetDataTask().execute();
             }
         });
 
     }
 
-
-    public void addListItem(String name, int imageId, String time){ //添加列表项的方法
+    //添加ListView项
+    public void addListItem(String name, int imageId, String time){
         People a = new People(name, imageId, time);
         peopleList.add(a);
     }
 
-
-
+    //插入数据库
     private void insertDB(ArrayList<String> time, ArrayList<String> name, ArrayList<Integer> ID,
                           ArrayList<String> identity, ArrayList<String> professional){
         MySqlHelper dbHelper = new MySqlHelper(SecondActivity.this,"people_db",null,1);

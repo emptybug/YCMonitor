@@ -21,13 +21,7 @@ import android.widget.ViewFlipper;
 import java.util.ArrayList;
 
 /**
- * 左右滑动demo
- * @author xzw
- *没解决的问题：
- * 1.用现成的库来实现浏览图片
- * 2.得到数据之后写入数据库
- * 3.怎么获取XML文件里的数组数据
- * 4.还有identity、professional和imageData数据没有写入数据库中（未修改数据库）
+ *
  */
 public class MainActivity extends Activity implements OnGestureListener{ //打开软件的页面
 
@@ -68,6 +62,7 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
 
     }
 
+    //初始化按钮
     private void initTitleButton() { //初始化按钮
         change = (Button)findViewById(R.id.button_change);
         update = (Button)findViewById(R.id.button_update);
@@ -91,11 +86,15 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
                 ArrayList<String> professionalList = new ArrayList<String>();
                 ArrayList<String> identityList = new ArrayList<String>();
 
+                IDList.add(1);
+                IDList.add(2);
+                IDList.add(3);
+                IDList.add(2);
+
                 imageList.add(R.drawable.new_feature_1);
-                imageList.add(R.drawable.new_feature_10);
+                imageList.add(R.drawable.new_feature_2);
+                imageList.add(R.drawable.new_feature_3);
                 imageList.add(R.drawable.new_feature_4);
-                imageList.add(R.drawable.new_feature_11);
-                addPeopleImage(imageList);
 
                 nameList.add("Mike");
                 nameList.add("Tony");
@@ -106,11 +105,6 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
                 timeList.add("2016-10-1 11:30");
                 timeList.add("2016-10-1 12:30");
                 timeList.add("2016-10-1 21:20");
-
-                IDList.add(1);
-                IDList.add(2);
-                IDList.add(3);
-                IDList.add(2);
 
                 identityList.add("110102197501101519");
                 identityList.add("44010219750110151X");
@@ -123,62 +117,72 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
                 professionalList.add("健身教练");
 
                 insertDB(timeList, nameList, IDList, identityList, professionalList); //插入数据项
-
-                searchDB(); //遍历数据库
+                //查看是否插入成功
                 searchTable();
+
+                searchDB();
+                //清除view里所有的内容
+                viewFlipper.removeAllViews();
+                //将遍历的新的内容添加到view中,第一个显示的是离当前时间最近出现的人
+                addPeopleImage(imageList);
+                time.setText(timeList.get(0));
+                name.setText(nameList.get(0));
+
             }
         });
     }
 
+    //初始化图片滑动
     private void initViewFlipper() {
         viewFlipper = (ViewFlipper) findViewById(R.id.viewFlipper);
         detector = new GestureDetector(this);
-
-        View.OnClickListener listener = new View.OnClickListener() { //点击事件
-            @Override
-            public void onClick(View v) { //在点击之后检索出所有该人物信息，组织好后放到Intent中传过去
-                int position = viewFlipper.getDisplayedChild(); //找到点击的图片的相关信息的位置
-                int id = IDList.get(position);
-
-                Intent thirdIntent; //点击之后进入个人详细列表
-                thirdIntent = new Intent(MainActivity.this, ThirdActivity.class);
-                thirdIntent.putExtra("ID", id);
-                startActivity(thirdIntent);
-            }
-        };
 
         //动画效果
         leftInAnimation = AnimationUtils.loadAnimation(this, R.anim.left_in);
         leftOutAnimation = AnimationUtils.loadAnimation(this, R.anim.left_out);
         rightInAnimation = AnimationUtils.loadAnimation(this, R.anim.right_in);
         rightOutAnimation = AnimationUtils.loadAnimation(this, R.anim.right_out);
+
+        //点击事件
+        //在点击之后检索出所有该人物信息，组织好后放到Intent中传过去
+        View.OnClickListener listener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //找到点击的图片的相关信息的位置
+                int position = viewFlipper.getDisplayedChild();
+                int id = IDList.get(position);
+
+                //点击之后进入个人详细列表
+                Intent thirdIntent;
+                thirdIntent = new Intent(MainActivity.this, ThirdActivity.class);
+                thirdIntent.putExtra("ID", id);
+                startActivity(thirdIntent);
+            }
+        };
         viewFlipper.setOnClickListener(listener);
     }
 
+    //初始化时间TextView、姓名TextView和图片
     private void init(){
-        initNameText(); //添加姓名name
-        initTimeText(); //添加时间text
+        name = (TextView)findViewById(R.id.name);
+        time = (TextView) findViewById(R.id.time_main_activity);
         searchDB();
+        name.setText(nameList.get(0));
+        time.setText(timeList.get(0));
+
         imageList.add(R.drawable.new_feature_1);
-        imageList.add(R.drawable.new_feature_10);
+        imageList.add(R.drawable.new_feature_2);
+        imageList.add(R.drawable.new_feature_3);
         imageList.add(R.drawable.new_feature_4);
-        imageList.add(R.drawable.new_feature_11);
         addPeopleImage(imageList);
 
     }
 
+    //将图片添加到viewFlipper里
     private void addPeopleImage(ArrayList<Integer> imageList) { //往viewFlipper添加View
         for(int i = 0; i < imageList.size(); i++) { //将集合里的数据放到viewFlipper里
             viewFlipper.addView(getImageView(imageList.get(i)));
         }
-    }
-
-    private void initTimeText() {
-        time = (TextView) findViewById(R.id.time_main_activity);
-    }
-
-    private void initNameText() {
-        name = (TextView)findViewById(R.id.name);
     }
 
     private ImageView getImageView(int id) {
@@ -195,19 +199,10 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
         SQLiteDatabase db = dbHelper.getWritableDatabase();
         ArrayList<Integer> IDList = ID; //用来插入people_time表
 
-        //判断数据库中是否已经存在了这些数据
-        /*Cursor cursor = db.rawQuery("select ID from people_info", null);
-        while(cursor.moveToNext()){
-            int IDData = cursor.getInt(cursor.getColumnIndex("ID"));
-            for(int size = ID.size(), i = size-1; i >= 0; i--){
-                if(ID.get(i) == IDData){ //数据库中已经有了这些数据
-                    ID.remove(i);
-                    name.remove(i);
-                    identity.remove(i);
-                    professional.remove(i);
-                }
-            }
-        }*/
+        /**
+         * 判断数据库中是否已经存在了这些数据
+         */
+
 
         //生成ContentValues对象
         ContentValues cv1 = new ContentValues();
@@ -235,7 +230,7 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
         db.close();
     }
 
-    //数据库遍历操作
+    //数据库遍历操作，将数据放入到列表中
     private void searchDB(){
         MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
         //得到一个可写的数据库
@@ -259,6 +254,33 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
         db.close();
     }
 
+    //删除数据库，用于修改重建数据库
+    private void dropDB(){
+        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
+        //得到一个可写的数据库
+        SQLiteDatabase db =dbHelper.getReadableDatabase();
+        this.deleteDatabase("people_db");
+        db.close();
+    }
+
+    //查看数据库数据，！测试用！
+    private void searchTable(){
+
+        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
+        //得到一个可写的数据库
+        SQLiteDatabase db =dbHelper.getReadableDatabase();
+
+        Cursor cursor = db.rawQuery("select * from people_info", null);
+        while(cursor.moveToNext()){
+            int ID = cursor.getInt(cursor.getColumnIndex("ID"));
+            String name = cursor.getString(cursor.getColumnIndex("name"));
+            String identity = cursor.getString(cursor.getColumnIndex("identity"));
+            String professional = cursor.getString(cursor.getColumnIndex("professional"));
+            System.out.println("query------->" + "姓名："+name+" "+"身份证号："+identity+" "+"号码："+ID+"职业: "+professional);
+        }
+        //关闭数据库
+        db.close();
+    }
 
     public boolean dispatchTouchEvent(MotionEvent ev){
         //先执行滑屏事件
@@ -339,42 +361,6 @@ public class MainActivity extends Activity implements OnGestureListener{ //打�
         return false;
     }
 
-    private void dropTable(){
-        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
-        //得到一个可写的数据库
-        SQLiteDatabase db =dbHelper.getReadableDatabase();
-
-        String sql = "drop table people_info";
-        db.execSQL(sql);
-        db.close();
-    }
-
-    //删除数据库
-    private void dropDB(){
-        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
-        //得到一个可写的数据库
-        SQLiteDatabase db =dbHelper.getReadableDatabase();
-        this.deleteDatabase("people_db");
-        db.close();
-    }
-
-    private void searchTable(){
-
-        MySqlHelper dbHelper = new MySqlHelper(MainActivity.this,"people_db",null,1);
-        //得到一个可写的数据库
-        SQLiteDatabase db =dbHelper.getReadableDatabase();
-
-        Cursor cursor = db.rawQuery("select * from people_info", null);
-        while(cursor.moveToNext()){
-            int ID = cursor.getInt(cursor.getColumnIndex("ID"));
-            String name = cursor.getString(cursor.getColumnIndex("name"));
-            String identity = cursor.getString(cursor.getColumnIndex("identity"));
-            String professional = cursor.getString(cursor.getColumnIndex("professional"));
-            System.out.println("query------->" + "姓名："+name+" "+"身份证号："+identity+" "+"号码："+ID+"职业: "+professional);
-        }
-        //关闭数据库
-        db.close();
-    }
 }
 
 

@@ -52,7 +52,8 @@ public class ThirdActivity extends Activity {
         initButton(); //初始化按钮
     }
 
-    private void initPeople(){ //初始化people的数据
+    //初始化people的数据
+    private void initPeople(){
         for(int size = IDList.size(), i = size-1; i >= 0; i--){
             addListItem(nameList.get(i), R.drawable.new_feature_1, timeList.get(i));
         }
@@ -60,12 +61,14 @@ public class ThirdActivity extends Activity {
         thirdImage.setImageResource(R.drawable.new_feature_1);
     }
 
-    private void addListItem(String name, int imageId, String time){ //添加列表项的方法
+    //添加列表项的方法
+    private void addListItem(String name, int imageId, String time){
         People a = new People(name, imageId, time);
         peopleList.add(a);
     }
 
-    private void initListView(){ //初始化列表
+    //初始化列表
+    private void initListView(){
         PeopleAdapter adapter = new PeopleAdapter(ThirdActivity.this,
                 R.layout.people_item, peopleList);
         listView = (ListView)findViewById(R.id.one_person_list);
@@ -80,7 +83,8 @@ public class ThirdActivity extends Activity {
         });
     }
 
-    private void initButton(){ //初始化按钮
+    //初始化按钮
+    private void initButton(){
         changeButton = (Button)findViewById(R.id.button_change);
         changeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,6 +119,5 @@ public class ThirdActivity extends Activity {
         //关闭数据库
         db.close();
     }
-
 
 }
