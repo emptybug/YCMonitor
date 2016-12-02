@@ -1,3 +1,6 @@
 <resources>
     <string name="app_name">YCMonitor</string>
+
+    <string name="default_test">待刷新</string>
+    <string name="reflash_button_test">刷新</string>
 </resources>
