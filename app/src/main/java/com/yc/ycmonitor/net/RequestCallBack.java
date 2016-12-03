@@ -5,5 +5,5 @@ package com.yc.ycmonitor.net;
  */
 public interface RequestCallBack {
 
-    public void solve(String msg);
+    public void solve(String res);
 }

@@ -1,4 +1,4 @@
-package com.yc.ycmonitor;
+package com.yc.ycmonitor.test;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.yc.ycmonitor.People;
+import com.yc.ycmonitor.R;
 import com.yc.ycmonitor.parser.HistoryParser;
 import com.yc.ycmonitor.parser.PeopleParser;
 
@@ -28,7 +30,7 @@ import java.util.List;
 /**
  * Created by Rabbee on 2016/12/2.
  */
-public class TestActivity extends Activity {
+public class XmlTestActivity extends Activity {
 
     private String TAG = "TextActivity";
 
