@@ -1,6 +1,8 @@
 package com.yc.ycmonitor.test;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -153,7 +155,8 @@ public class XmlTestActivity extends Activity {
                 idTextView.setText("id： " + people.getId());
                 nameTextView.setText("姓名： " + people.getName());
                 identityTextView.setText("身份： " + people.getIdentity());
-                picImageView.setImageBitmap(people.getImage());
+                Bitmap bitmap = BitmapFactory.decodeByteArray(people.getImage(), 0, people.getImage().length);
+                picImageView.setImageBitmap(bitmap);
             }
             if (historyItemList.size() > 0 )
             {

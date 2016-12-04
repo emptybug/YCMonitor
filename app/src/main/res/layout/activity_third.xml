@@ -45,7 +45,7 @@
         android:layout_toRightOf="@+id/image_view"/>
 
     <TextView
-        android:id="@+id/zan_ding"
+        android:id="@+id/people_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
